@@ -7,13 +7,42 @@
       "prenom": "SOSSOU",
       "email": "sossou2026@gmail.com",
       "telephone": "0000000000",
-      "password_hash": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtYA.qGZvKG6G",
+      "password_hash": "68a80f1658eab493658d9deff5ff82a2cc8a2e51853d9546627367ca0723809e",
       "proprio_id": null,
       "validated": true,
       "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "role": "proprietaire",
+      "nom": "Sossou",
+      "prenom": "Célestin ",
+      "email": "sossoucelestin@gmail.com",
+      "telephone": "+22967924076",
+      "password_hash": "68a80f1658eab493658d9deff5ff82a2cc8a2e51853d9546627367ca0723809e",
+      "proprio_id": null,
+      "validated": true,
+      "created_at": "2026-05-18T21:24:53.591Z"
+    },
+    {
+      "id": 2,
+      "role": "massier",
+      "nom": "Kouamé",
+      "prenom": "Sossou",
+      "email": "sossoukouam@gmail.com",
+      "telephone": "+22995501564",
+      "password_hash": "d4d8b456b2407f364b5a4dc8ffd4113e1c9c5df4a204663d78fccbd62135cfbd",
+      "proprio_id": "2",
+      "validated": false,
+      "created_at": "2026-05-18T21:25:31.975Z"
     }
   ],
-  "proprietaire_stock": {},
+  "proprietaire_stock": {
+    "2": {
+      "stock_515": 0,
+      "stock_510": 0
+    }
+  },
   "ouvrier_rapports": [],
   "ouvrier_lignes": [],
   "ventes": [],

@@ -4,7 +4,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 const DB_FILE = path.join(__dirname, 'db.json');
 
 app.use(express.json());
@@ -76,7 +76,7 @@ app.post('/api/register', (req, res) => {
     email: data.email,
     telephone: data.telephone,
     password_hash: hashPassword(data.password),
-    proprio_id: data.proprio_id,
+    proprio_id: data.proprio_id ? parseInt(data.proprio_id) : null,
     validated: false,
     created_at: new Date().toISOString()
   };
