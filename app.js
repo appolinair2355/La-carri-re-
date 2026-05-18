@@ -18,52 +18,78 @@ async function hashPassword(pw) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// ─── STOCKAGE JSON ───
-function loadDB() {
-  const raw = localStorage.getItem('sossou_db');
-  if (raw) return JSON.parse(raw);
-  const defaultDB = {
-    users: [{
-      id: 1, role: 'admin', nom: 'KOUAMÉ', prenom: 'SOSSOU',
-      email: ADMIN_EMAIL, telephone: '0000000000',
-      password_hash: '', proprio_id: null, validated: true,
-      created_at: new Date().toISOString()
-    }],
-    proprietaire_stock: {},
-    ouvrier_rapports: [],
-    ouvrier_lignes: [],
-    ventes: [],
-    validations_financieres: [],
-    sequences: { users: 1, ouvrier_rapports: 0, ventes: 0, validations_financieres: 0 }
-  };
-  hashPassword('admin2024').then(h => { defaultDB.users[0].password_hash = h; saveDB(defaultDB); });
-  return defaultDB;
+// ─── STOCKAGE VIA API ───
+let DB_CACHE = null;
+
+async function loadDB() {
+  if (DB_CACHE) return DB_CACHE;
+  try {
+    const res = await fetch('/api/db');
+    DB_CACHE = await res.json();
+    return DB_CACHE;
+  } catch(e) {
+    // Fallback: valeur par défaut
+    DB_CACHE = {
+      users: [{
+        id: 1, role: 'admin', nom: 'KOUAMÉ', prenom: 'SOSSOU',
+        email: ADMIN_EMAIL, telephone: '0000000000',
+        password_hash: '', proprio_id: null, validated: true,
+        created_at: new Date().toISOString()
+      }],
+      proprietaire_stock: {},
+      ouvrier_rapports: [],
+      ouvrier_lignes: [],
+      ventes: [],
+      validations_financieres: [],
+      sequences: { users: 1, ouvrier_rapports: 0, ventes: 0, validations_financieres: 0 }
+    };
+    hashPassword('admin2024').then(h => { DB_CACHE.users[0].password_hash = h; });
+    return DB_CACHE;
+  }
+}
+
+async function apiPost(endpoint, data) {
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+  DB_CACHE = null; // Invalidate cache
+  return res.json();
 }
 
 function saveDB(db) {
-  localStorage.setItem('sossou_db', JSON.stringify(db));
+  DB_CACHE = db;
 }
 
 let DB = loadDB();
 
+let LOCAL_SEQ = { users: 100, ouvrier_rapports: 100, ventes: 100, validations_financieres: 100, ouvrier_lignes: 100 };
 function nextId(seq) {
-  DB.sequences[seq] = (DB.sequences[seq] || 0) + 1;
-  saveDB(DB);
-  return DB.sequences[seq];
+  LOCAL_SEQ[seq] = (LOCAL_SEQ[seq] || 100) + 1;
+  return LOCAL_SEQ[seq];
 }
 
 // ─── SESSION ───
+let __session = null;
+
 function getSession() {
-  const raw = sessionStorage.getItem('sossou_session');
-  return raw ? JSON.parse(raw) : null;
+  if (__session) return __session;
+  try {
+    const raw = sessionStorage.getItem('sossou_session');
+    if (raw) { __session = JSON.parse(raw); return __session; }
+  } catch(e) {}
+  return null;
 }
 
 function setSession(user) {
-  sessionStorage.setItem('sossou_session', JSON.stringify(user));
+  __session = user;
+  try { sessionStorage.setItem('sossou_session', JSON.stringify(user)); } catch(e) {}
 }
 
 function clearSession() {
-  sessionStorage.removeItem('sossou_session');
+  __session = null;
+  try { sessionStorage.removeItem('sossou_session'); } catch(e) {}
 }
 
 function handleLogout() {
