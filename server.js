@@ -42,8 +42,9 @@ function hashPassword(pw) {
 function nextId(seq) {
   const db = loadDB();
   db.sequences[seq] = (db.sequences[seq] || 0) + 1;
+  const newId = db.sequences[seq];
   saveDB(db);
-  return db.sequences[seq];
+  return newId;
 }
 
 // Init DB
@@ -76,7 +77,7 @@ app.post('/api/register', (req, res) => {
     email: data.email,
     telephone: data.telephone,
     password_hash: hashPassword(data.password),
-    proprio_id: data.proprio_id ? parseInt(data.proprio_id) : null,
+    proprio_id: data.proprio_id ? String(data.proprio_id) : null,
     validated: false,
     created_at: new Date().toISOString()
   };
@@ -135,7 +136,7 @@ app.post('/api/rapports', (req, res) => {
   const rapportId = nextId('ouvrier_rapports');
   db.ouvrier_rapports.push({
     id: rapportId,
-    massier_id: data.massier_id,
+    massier_id: parseInt(data.massier_id),
     date: new Date().toISOString().split('T')[0],
     soumis_at: new Date().toISOString()
   });
@@ -150,9 +151,9 @@ app.post('/api/rapports', (req, res) => {
   }
   const total515 = (data.lignes || []).reduce((s, l) => s + (l.qte_515 || 0), 0);
   const total510 = (data.lignes || []).reduce((s, l) => s + (l.qte_510 || 0), 0);
-  const massier = db.users.find(u => u.id === data.massier_id);
+  const massier = db.users.find(u => u.id === parseInt(data.massier_id));
   if (massier && massier.proprio_id) {
-    const sid = massier.proprio_id;
+    const sid = parseInt(massier.proprio_id);
     if (!db.proprietaire_stock[sid]) db.proprietaire_stock[sid] = { stock_515: 0, stock_510: 0 };
     db.proprietaire_stock[sid].stock_515 += total515;
     db.proprietaire_stock[sid].stock_510 += total510;
@@ -168,14 +169,14 @@ app.post('/api/ventes', (req, res) => {
   const venteId = nextId('ventes');
   db.ventes.push({
     id: venteId,
-    massier_id: data.massier_id,
+    massier_id: parseInt(data.massier_id),
     qte_515: data.qte_515 || 0,
     qte_510: data.qte_510 || 0,
     date_at: new Date().toISOString()
   });
-  const massier = db.users.find(u => u.id === data.massier_id);
+  const massier = db.users.find(u => u.id === parseInt(data.massier_id));
   if (massier && massier.proprio_id) {
-    const sid = massier.proprio_id;
+    const sid = parseInt(massier.proprio_id);
     if (!db.proprietaire_stock[sid]) db.proprietaire_stock[sid] = { stock_515: 0, stock_510: 0 };
     db.proprietaire_stock[sid].stock_515 = Math.max(db.proprietaire_stock[sid].stock_515 - (data.qte_515 || 0), 0);
     db.proprietaire_stock[sid].stock_510 = Math.max(db.proprietaire_stock[sid].stock_510 - (data.qte_510 || 0), 0);
@@ -184,10 +185,11 @@ app.post('/api/ventes', (req, res) => {
   res.json({ success: true });
 });
 
-// Validate Massier
+// Validate Massier — CORRIGÉ
 app.post('/api/validate-massier', (req, res) => {
   const db = loadDB();
-  const massier = db.users.find(u => u.id === req.body.massier_id);
+  const massierId = parseInt(req.body.massier_id);
+  const massier = db.users.find(u => u.id === massierId);
   if (massier) {
     massier.validated = true;
     saveDB(db);
@@ -202,8 +204,8 @@ app.post('/api/valider-rapport', (req, res) => {
   const db = loadDB();
   db.validations_financieres.push({
     id: nextId('validations_financieres'),
-    massier_id: data.massier_id,
-    rapport_id: data.rapport_id,
+    massier_id: parseInt(data.massier_id),
+    rapport_id: parseInt(data.rapport_id),
     montant_515: data.montant_515 || 0,
     montant_510: data.montant_510 || 0,
     total: (data.montant_515 || 0) + (data.montant_510 || 0),

@@ -25,7 +25,7 @@
       "created_at": "2026-05-18T21:24:53.591Z"
     },
     {
-      "id": 2,
+      "id": 3,
       "role": "massier",
       "nom": "Kouamé",
       "prenom": "Sossou",
@@ -48,7 +48,7 @@
   "ventes": [],
   "validations_financieres": [],
   "sequences": {
-    "users": 1,
+    "users": 3,
     "ouvrier_rapports": 0,
     "ventes": 0,
     "validations_financieres": 0
